@@ -1,9 +1,10 @@
 use std::{
-    fs::{read_to_string, File},
+    fs::{self, read_to_string, File},
     io::Write,
 };
 
 use anyhow::Error;
+use quote::quote;
 
 fn skip_regex_splitter(params: &str) -> Vec<&str> {
     let mut ret = vec![];
@@ -42,6 +43,7 @@ enum Command {
     ThirdParty(bool),
     RemoveParamAll,
     RemoveParam(String),
+    RemoveParamRegex(String),
     Domain(Vec<String>),
     DenyAllow(Vec<String>),
     App(String),
@@ -50,9 +52,11 @@ enum Command {
 
 fn main() -> Result<(), Error> {
     let out_dir = std::env::var("OUT_DIR").unwrap();
-    let destination = std::path::Path::new(&out_dir).join("test.txt");
-    let raw_rules = read_to_string("src/rules.txt").unwrap();
-    let mut f = File::create(destination).unwrap();
+    let text_dump_path = std::path::Path::new(&out_dir).join("test.txt");
+    let rust_stripper_path = std::path::Path::new(&out_dir).join("rules_generated.rs");
+    let raw_rules: String = read_to_string("src/rules.txt").unwrap();
+    let mut text_dump = File::create(text_dump_path).unwrap();
+    let mut all_commands: Vec<Vec<Command>> = vec![];
     for (mut line_index, mut line) in raw_rules.split('\n').map(|l| l.trim_end()).enumerate() {
         line_index += 1;
         if line.len() == 0 || line.starts_with('!') {
@@ -105,7 +109,11 @@ fn main() -> Result<(), Error> {
                     ));
                 }
                 "removeparam" => {
-                    commands.push(Command::RemoveParam(String::from(value)));
+                    if value.starts_with("/") {
+                        commands.push(Command::RemoveParamRegex(String::from(value)));
+                    } else {
+                        commands.push(Command::RemoveParam(String::from(value)));
+                    }
                 }
                 "app" => {
                     commands.push(Command::App(String::from(value)));
@@ -115,8 +123,54 @@ fn main() -> Result<(), Error> {
                 }
             }
         }
-        f.write(format!("command: {commands:#?}").as_bytes())?;
-        f.write("\n".as_bytes())?;
+        text_dump.write(format!("command: {commands:#?}").as_bytes())?;
+        text_dump.write("\n".as_bytes())?;
+        all_commands.push(commands);
     }
+    let always_delete: Vec<String> = all_commands
+        .iter()
+        .filter(|c| {
+            if c.len() != 1 {
+                return false;
+            }
+            match c.first().unwrap() {
+                Command::RemoveParam(_) => true,
+                _ => false,
+            }
+        })
+        .map(|c| match c.first().unwrap() {
+            Command::RemoveParam(param) => param,
+            _ => panic!("Should be impossible due to filter"),
+        })
+        .cloned()
+        .collect();
+    let output = quote! {
+       use url::Url;
+       use anyhow::Result;
+       use std::collections::HashMap;
+       use std::ops::Deref;
+       pub fn stripper(url_str: &str) -> Result<String> {
+        let mut url = Url::parse(url_str)?;
+        let mut query: HashMap<String, String> = HashMap::new();
+        for (key, value) in url.query_pairs() {
+            match key.deref() {
+                #( #always_delete  => {} )*
+                _ => {
+                    query.insert(key.to_string(), value.to_string());
+                }
+            }
+        }
+        if query.is_empty() {
+            url.set_query(None)
+        } else {
+            url.query_pairs_mut().clear().extend_pairs(query);
+        }
+        Ok(url.into())
+       }
+
+    };
+    let syntax_tree = syn::parse2(output).unwrap();
+    let formatted = prettyplease::unparse(&syntax_tree);
+    fs::write(rust_stripper_path, formatted)?;
     Ok(())
 }

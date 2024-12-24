@@ -5,3 +5,10 @@ edition = "2021"
 
 [build-dependencies]
 anyhow = "1"
+quote = "1"
+syn = "2"
+prettyplease = "0.2"
+
+[dependencies]
+anyhow = "1"
+url = "2"
