@@ -1,3 +1,5 @@
+#![allow(unused_doc_comments)]
+
 mod rules;
 use anyhow::Result;
 
@@ -23,6 +25,17 @@ mod tests {
         assert_eq!(
             result,
             "https://www.businessinsider.com/best-modern-christmas-songs-2024"
+        );
+    }
+
+    #[test]
+    fn strip_simple_url_filter() {
+        // Ones like '||bing.'
+        let original = "https://www.bing.com/search?q=hello&form=QBLH&sp=-1&pq=hello&sc=8-5&qs=n&sk=&cvid=49B83A335B1C4884B71B2FAD4A8027A9";
+        let result = shuck(original).unwrap();
+        assert_eq!(
+            result,
+            "https://www.bing.com/search?q=hello&form=QBLH&sc=8-5&sk="
         );
     }
 }

@@ -1,4 +1,5 @@
 use std::{
+    collections::BTreeMap,
     fs::{self, read_to_string, File},
     io::Write,
 };
@@ -37,7 +38,7 @@ fn skip_regex_splitter(params: &str) -> Vec<&str> {
     return ret;
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 enum Command {
     Hostname(String),
     ThirdParty(bool),
@@ -68,11 +69,9 @@ fn main() -> Result<(), Error> {
             line = &line[2..];
         }
         if !line.starts_with("$") {
-            let (hostname, _rest) = line[2..]
-                .split_once('$')
-                .expect(&format!("hostname: '{line}'"));
+            let (hostname, _rest) = line.split_once('$').expect(&format!("hostname: '{line}'"));
             commands.push(Command::Hostname(hostname.into()));
-            line = &line[(hostname.len() + 2)..];
+            line = &line[(hostname.len())..];
         }
         assert!(line.starts_with("$"), "Missing $ at {line_index}");
         line = &line[1..];
@@ -127,38 +126,91 @@ fn main() -> Result<(), Error> {
         text_dump.write("\n".as_bytes())?;
         all_commands.push(commands);
     }
-    let always_delete: Vec<String> = all_commands
+    let mut remove_params: BTreeMap<String, Vec<Vec<Command>>> = BTreeMap::new();
+    all_commands
         .iter()
-        .filter(|c| {
-            if c.len() != 1 {
-                return false;
-            }
-            match c.first().unwrap() {
-                Command::RemoveParam(_) => true,
-                _ => false,
+        .map(|cv| {
+            let remove_param_keys = cv
+                .iter()
+                .map(|c| match c {
+                    Command::RemoveParam(param) => Some(param),
+                    _ => None,
+                })
+                .filter(|p| p.is_some())
+                .next();
+            if let Some(key) = remove_param_keys {
+                (key, cv)
+            } else {
+                (None, cv)
             }
         })
-        .map(|c| match c.first().unwrap() {
-            Command::RemoveParam(param) => param,
-            _ => panic!("Should be impossible due to filter"),
-        })
-        .cloned()
-        .collect();
+        .filter(|(key, _)| key.is_some())
+        .map(|(key, value)| (key.unwrap(), value))
+        .for_each(|(key, value)| {
+            remove_params
+                .entry(key.clone())
+                .and_modify(|v| v.push(value.to_vec()))
+                .or_insert(vec![value.to_vec()]);
+        });
+    let mut patterns = vec![];
+    for (key, value) in remove_params.iter() {
+        let mut requirements = vec![];
+        let mut has_no_filter_command = false;
+        for commands in value {
+            if commands.len() == 1 {
+                if let Command::RemoveParam(_) = commands.get(0).unwrap() {
+                    // Only command is remove param, so just remove it
+                    has_no_filter_command = true;
+                }
+            }
+            for command in commands {
+                match command {
+                    Command::Hostname(hostname) => {
+                        let mut hostname_pattern = hostname.clone();
+                        if hostname_pattern.starts_with("||") {
+                            hostname_pattern =
+                                hostname_pattern.replace("||", "https?://(?:www\\.)?")
+                        }
+                        requirements.push(quote! {
+                            Regex::new(#hostname_pattern).unwrap().is_match(url_str)
+                        });
+                    }
+                    _ => {}
+                }
+            }
+        }
+        if has_no_filter_command || requirements.is_empty() {
+            requirements.push(quote! {true});
+        }
+        let raw_comment = format!("{value:#?}");
+
+        let comments: Vec<_> = raw_comment
+            .lines()
+            .map(|line| quote!(#[doc = #line]))
+            .collect();
+
+        let matcher = quote! {
+            #key => {
+                #(#comments)*
+                #(if #requirements {continue;})*
+            }
+        };
+        patterns.push(matcher);
+    }
     let output = quote! {
        use url::Url;
        use anyhow::Result;
-       use std::collections::HashMap;
        use std::ops::Deref;
+       use regex::Regex;
        pub fn stripper(url_str: &str) -> Result<String> {
         let mut url = Url::parse(url_str)?;
-        let mut query: HashMap<String, String> = HashMap::new();
+        let mut query: Vec<(String, String)> = vec![];
         for (key, value) in url.query_pairs() {
             match key.deref() {
-                #( #always_delete  => {} )*
-                _ => {
-                    query.insert(key.to_string(), value.to_string());
-                }
+                #( #patterns )*
+                _ => {}
             }
+            query.push((key.to_string(), value.to_string()));
         }
         if query.is_empty() {
             url.set_query(None)
@@ -171,6 +223,6 @@ fn main() -> Result<(), Error> {
     };
     let syntax_tree = syn::parse2(output).unwrap();
     let formatted = prettyplease::unparse(&syntax_tree);
-    fs::write(rust_stripper_path, formatted)?;
+    fs::write(rust_stripper_path, &formatted)?;
     Ok(())
 }
