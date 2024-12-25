@@ -38,4 +38,14 @@ mod tests {
             "https://www.bing.com/search?q=hello&form=QBLH&sc=8-5&sk="
         );
     }
+
+    #[test]
+    fn domain_filters() {
+        let original = "https://fortune.com/2021/03/11/amazon-fresh-retail-stores-vacant-plan/?queryly=related_article";
+        let result = shuck(original).unwrap();
+        assert_eq!(
+            result,
+            "https://fortune.com/2021/03/11/amazon-fresh-retail-stores-vacant-plan/"
+        );
+    }
 }

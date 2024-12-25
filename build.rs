@@ -2,6 +2,7 @@ use std::{
     collections::BTreeMap,
     fs::{self, read_to_string, File},
     io::Write,
+    path::Path,
 };
 
 use anyhow::Error;
@@ -53,8 +54,8 @@ enum Command {
 
 fn main() -> Result<(), Error> {
     let out_dir = std::env::var("OUT_DIR").unwrap();
-    let text_dump_path = std::path::Path::new(&out_dir).join("test.txt");
-    let rust_stripper_path = std::path::Path::new(&out_dir).join("rules_generated.rs");
+    let text_dump_path = Path::new(&out_dir).join("test.txt");
+    let rust_stripper_path = Path::new(&out_dir).join("rules_generated.rs");
     let raw_rules: String = read_to_string("src/rules.txt").unwrap();
     let mut text_dump = File::create(text_dump_path).unwrap();
     let mut all_commands: Vec<Vec<Command>> = vec![];
@@ -175,6 +176,15 @@ fn main() -> Result<(), Error> {
                             Regex::new(#hostname_pattern).unwrap().is_match(url_str)
                         });
                     }
+                    Command::Domain(domains) => {
+                        requirements.push(quote! {
+                            url.host_str().map(|h|
+                                match h {
+                                    #( #domains => true, )*
+                                    _ => false
+                                }).unwrap_or(false)
+                        });
+                    }
                     _ => {}
                 }
             }
@@ -221,6 +231,7 @@ fn main() -> Result<(), Error> {
        }
 
     };
+    fs::write(Path::new(&out_dir).join("debug.rs"), format!("{output:#?}")).unwrap();
     let syntax_tree = syn::parse2(output).unwrap();
     let formatted = prettyplease::unparse(&syntax_tree);
     fs::write(rust_stripper_path, &formatted)?;
