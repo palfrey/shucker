@@ -42,7 +42,6 @@ fn skip_regex_splitter(params: &str) -> Vec<&str> {
 #[derive(Debug, Clone)]
 enum Command {
     Hostname(String),
-    ThirdParty(bool),
     RemoveParamAll,
     RemoveParam(String),
     RemoveParamRegex(String),
@@ -80,11 +79,9 @@ fn main() -> Result<(), Error> {
         for p in skip_regex_splitter(line) {
             match p {
                 "~third-party" => {
-                    commands.push(Command::ThirdParty(false));
                     continue;
                 }
                 "third-party" => {
-                    commands.push(Command::ThirdParty(true));
                     continue;
                 }
                 "removeparam" => {
