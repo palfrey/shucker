@@ -15,3 +15,6 @@ anyhow = "1"
 url = "2"
 regex = "1"
 itertools = "0.13"
+
+[dev-dependencies]
+pretty_assertions = "1"

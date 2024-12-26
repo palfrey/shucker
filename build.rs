@@ -179,10 +179,12 @@ fn main() -> Result<(), Error> {
                     }
                     Command::Domain(domains) => {
                         requirements.push(quote! {
-                            url.host_str().map(|h|
-                                match h {
-                                    #( #domains => true, )*
-                                    _ => false
+                            url.host_str().map(|h| {
+                                #(
+                                   if h == #domains { return true;}
+                                   if h.ends_with(concat!(".", #domains)) { return true;}
+                                )*
+                                return false;
                                 }).unwrap_or(false)
                         });
                     }

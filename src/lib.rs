@@ -10,6 +10,7 @@ pub fn shuck(url: &str) -> Result<String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use pretty_assertions::assert_eq;
 
     #[test]
     fn no_change() {
@@ -30,22 +31,17 @@ mod tests {
 
     #[test]
     fn strip_simple_url_filter() {
-        // Ones like '||bing.'
-        let original = "https://www.bing.com/search?q=hello&form=QBLH&sp=-1&pq=hello&sc=8-5&qs=n&sk=&cvid=49B83A335B1C4884B71B2FAD4A8027A9";
+        // Ones like '||slack.com/downloads/'
+        let original = "https://slack.com/downloads/linux?t=[Slack channel ID]";
         let result = shuck(original).unwrap();
-        assert_eq!(
-            result,
-            "https://www.bing.com/search?q=hello&form=QBLH&sc=8-5&sk="
-        );
+        assert_eq!(result, "https://slack.com/downloads/linux");
     }
 
     #[test]
     fn domain_filters() {
-        let original = "https://fortune.com/2021/03/11/amazon-fresh-retail-stores-vacant-plan/?queryly=related_article";
+        let original =
+            "https://www6.nhk.or.jp/nhkpr/?cid=prhk-carousel-berabou&cid=jp-g-pr-carousel3";
         let result = shuck(original).unwrap();
-        assert_eq!(
-            result,
-            "https://fortune.com/2021/03/11/amazon-fresh-retail-stores-vacant-plan/"
-        );
+        assert_eq!(result, "https://www6.nhk.or.jp/nhkpr/");
     }
 }
