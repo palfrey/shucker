@@ -1,0 +1,3 @@
+[submodule "external/adguardfilters"]
+	path = external/adguardfilters
+	url = https://github.com/AdguardTeam/AdguardFilters

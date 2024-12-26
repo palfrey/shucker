@@ -60,7 +60,12 @@ fn main() -> Result<(), Error> {
     let mut all_commands: Vec<Vec<Command>> = vec![];
     for (mut line_index, mut line) in raw_rules.split('\n').map(|l| l.trim_end()).enumerate() {
         line_index += 1;
-        if line.len() == 0 || line.starts_with('!') {
+        if line.len() == 0
+            || line.starts_with('!')
+            || line.contains("##.")
+            || line.contains("#$#")
+            || line.contains("https-filtering-check.adtidy.org")
+        {
             continue;
         }
         let mut commands: Vec<Command> = vec![];
@@ -78,10 +83,8 @@ fn main() -> Result<(), Error> {
 
         for p in skip_regex_splitter(line) {
             match p {
-                "~third-party" => {
-                    continue;
-                }
-                "third-party" => {
+                "~third-party" | "third-party" | "xmlhttprequest" | "image" | "document"
+                | "media" | "script" | "subdocument" | "font" | "stylesheet" => {
                     continue;
                 }
                 "removeparam" => {
@@ -95,6 +98,7 @@ fn main() -> Result<(), Error> {
                 .split_once('=')
                 .expect(&format!("p: '{p}' at {line_index}"));
             match key {
+                "cookie" => {}
                 "domain" => {
                     commands.push(Command::Domain(
                         value.split('|').map(String::from).collect(),
