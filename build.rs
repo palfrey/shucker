@@ -173,6 +173,9 @@ fn main() -> Result<(), Error> {
                             hostname_pattern =
                                 hostname_pattern.replace("||", "https?://(?:www\\.)?")
                         }
+                        if hostname_pattern.ends_with("^") {
+                            hostname_pattern = hostname_pattern.replace("^", "[^a-z0-9_\\-\\.%]")
+                        }
                         requirements.push(quote! {
                             Regex::new(#hostname_pattern).unwrap().is_match(url_str)
                         });
