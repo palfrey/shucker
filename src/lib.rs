@@ -44,4 +44,19 @@ mod tests {
         let result = shuck(original).unwrap();
         assert_eq!(result, "https://www6.nhk.or.jp/nhkpr/");
     }
+
+    #[test]
+    fn regex_remove_param() {
+        let original ="https://www.reddit.com/r/apple/comments/1g478w1/apple_announces_new_ipad_mini_with_a17_pro_chip/?%24deep_link=true&post_index=1&%243p=e_as";
+        let result = shuck(original).unwrap();
+        assert_eq!(result, "https://www.reddit.com/r/apple/comments/1g478w1/apple_announces_new_ipad_mini_with_a17_pro_chip/");
+    }
+
+    #[test]
+    fn regex_remove_param_on_host() {
+        // Like regex_remove_param but specifically with a host that doesn't end "reddit.com"
+        let original ="https://www.reddit-not.com/r/apple/comments/1g478w1/apple_announces_new_ipad_mini_with_a17_pro_chip/?%24deep_link=true&post_index=1&%243p=e_as";
+        let result = shuck(original).unwrap();
+        assert_eq!(result, "https://www.reddit-not.com/r/apple/comments/1g478w1/apple_announces_new_ipad_mini_with_a17_pro_chip/?%24deep_link=true&post_index=1&%243p=e_as");
+    }
 }
