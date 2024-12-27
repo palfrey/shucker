@@ -4,6 +4,9 @@ version = "0.1.0"
 edition = "2021"
 license = "GPLv3"
 
+[lib]
+crate-type = ["cdylib", "rlib"]
+
 [build-dependencies]
 anyhow = "1"
 quote = "1"
@@ -16,6 +19,7 @@ anyhow = "1"
 url = "2"
 regex = "1"
 itertools = "0.13"
+pyo3 = {version = "0.23", features=["extension-module"]}
 
 [dev-dependencies]
 pretty_assertions = "1"

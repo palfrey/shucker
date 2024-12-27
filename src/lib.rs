@@ -1,10 +1,22 @@
 #![allow(unused_doc_comments)]
 
 mod rules;
-use anyhow::Result;
+use pyo3::{
+    exceptions::PyRuntimeError,
+    pyfunction, pymodule,
+    types::{PyModule, PyModuleMethods},
+    wrap_pyfunction, Bound, PyResult,
+};
 
-pub fn shuck(url: &str) -> Result<String> {
-    rules::stripper(url)
+#[pyfunction]
+pub fn shuck(url: &str) -> PyResult<String> {
+    rules::stripper(url).map_err(|e| PyRuntimeError::new_err(e.to_string()))
+}
+
+#[pymodule]
+fn shucker(m: &Bound<'_, PyModule>) -> PyResult<()> {
+    m.add_function(wrap_pyfunction!(shuck, m)?)?;
+    Ok(())
 }
 
 #[cfg(test)]
