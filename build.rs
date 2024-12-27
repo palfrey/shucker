@@ -1,11 +1,13 @@
 use std::{
     collections::BTreeMap,
+    fmt::Debug,
     fs::{self, read_to_string, File},
     io::Write,
     path::Path,
 };
 
-use anyhow::Error;
+use anyhow::Result;
+use proc_macro2::TokenStream;
 use quote::quote;
 
 fn skip_regex_splitter(params: &str) -> Vec<&str> {
@@ -51,10 +53,8 @@ enum Command {
     Invert,
 }
 
-fn main() -> Result<(), Error> {
-    let out_dir = std::env::var("OUT_DIR").unwrap();
-    let text_dump_path = Path::new(&out_dir).join("test.txt");
-    let rust_stripper_path = Path::new(&out_dir).join("rules_generated.rs");
+fn build_commands(out_dir: &Path) -> Result<Vec<Vec<Command>>> {
+    let text_dump_path = out_dir.join("test.txt");
     let raw_rules: String = read_to_string("src/rules.txt").unwrap();
     let mut text_dump = File::create(text_dump_path).unwrap();
     let mut all_commands: Vec<Vec<Command>> = vec![];
@@ -128,6 +128,19 @@ fn main() -> Result<(), Error> {
         text_dump.write("\n".as_bytes())?;
         all_commands.push(commands);
     }
+    Ok(all_commands)
+}
+
+fn comment_block(value: impl Debug) -> Vec<TokenStream> {
+    let raw_comment = format!("{value:#?}");
+
+    return raw_comment
+        .lines()
+        .map(|line| quote!(#[doc = #line]))
+        .collect();
+}
+
+fn build_remove_params(all_commands: &Vec<Vec<Command>>) -> TokenStream {
     let mut remove_params: BTreeMap<String, Vec<Vec<Command>>> = BTreeMap::new();
     all_commands
         .iter()
@@ -198,12 +211,7 @@ fn main() -> Result<(), Error> {
         if has_no_filter_command || requirements.is_empty() {
             requirements.push(quote! {true});
         }
-        let raw_comment = format!("{value:#?}");
-
-        let comments: Vec<_> = raw_comment
-            .lines()
-            .map(|line| quote!(#[doc = #line]))
-            .collect();
+        let comments = comment_block(value);
 
         let matcher = quote! {
             #key => {
@@ -213,6 +221,21 @@ fn main() -> Result<(), Error> {
         };
         patterns.push(matcher);
     }
+    return quote! {
+        match key.deref() {
+            #( #patterns )*
+            _ => {}
+        }
+    };
+}
+
+fn main() -> Result<()> {
+    let out_dir_var = std::env::var("OUT_DIR").unwrap();
+    let out_dir = Path::new(&out_dir_var);
+    let rust_stripper_path = out_dir.join("rules_generated.rs");
+    let all_commands = build_commands(out_dir)?;
+    let remove_param_check = build_remove_params(&all_commands);
+    let remove_param_regex_check = build_remove_params_regex(&all_commands);
     let output = quote! {
        use url::Url;
        use anyhow::Result;
@@ -222,10 +245,7 @@ fn main() -> Result<(), Error> {
         let mut url = Url::parse(url_str)?;
         let mut query: Vec<(String, String)> = vec![];
         for (key, value) in url.query_pairs() {
-            match key.deref() {
-                #( #patterns )*
-                _ => {}
-            }
+            #remove_param_check
             query.push((key.to_string(), value.to_string()));
         }
         if query.is_empty() {

@@ -310,6 +310,7 @@ dependencies = [
  "itertools",
  "pretty_assertions",
  "prettyplease",
+ "proc-macro2",
  "quote",
  "regex",
  "syn",
