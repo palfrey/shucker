@@ -49,7 +49,6 @@ enum Command {
     RemoveParamRegex(String),
     Domain(Vec<String>),
     DenyAllow(Vec<String>),
-    App(String),
     Invert,
 }
 
@@ -98,7 +97,7 @@ fn build_commands(out_dir: &Path) -> Result<Vec<Vec<Command>>> {
                 .split_once('=')
                 .expect(&format!("p: '{p}' at {line_index}"));
             match key {
-                "cookie" => {}
+                "cookie" | "app" => {}
                 "domain" => {
                     commands.push(Command::Domain(
                         value.split('|').map(String::from).collect(),
@@ -115,9 +114,6 @@ fn build_commands(out_dir: &Path) -> Result<Vec<Vec<Command>>> {
                     } else {
                         commands.push(Command::RemoveParam(String::from(value)));
                     }
-                }
-                "app" => {
-                    commands.push(Command::App(String::from(value)));
                 }
                 key => {
                     panic!("key: {key} value: {value} at {line_index}");
