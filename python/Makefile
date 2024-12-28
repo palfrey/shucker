@@ -9,10 +9,10 @@ pypi: sync
 	.venv/bin/twine upload dist/*
 
 type-check: sync
-	.venv/bin/pyright --pythonversion 3.9 --pythonpath $(PWD)/.venv/bin/python paracrine integration_test tests
+	.venv/bin/pyright --pythonversion 3.9 --pythonpath $(PWD)/.venv/bin/python tests
 
 watch-type-check: sync
-	.venv/bin/pyright --pythonversion 3.9 --pythonpath $(PWD)/.venv/bin/python --watch paracrine integration_test tests
+	.venv/bin/pyright --pythonversion 3.9 --pythonpath $(PWD)/.venv/bin/python --watch tests
 
 unittests-watch: sync
 	.venv/bin/ptw --runner .venv/bin/pytest --now . -- -vvv tests/
