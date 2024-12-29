@@ -13,7 +13,7 @@ pub fn shuck(url: &str) -> Result<String> {
     rules::stripper(url)
 }
 
-#[pyfunction(name="shuck")]
+#[pyfunction(name = "shuck")]
 fn py_shuck(url: &str) -> PyResult<String> {
     rules::stripper(url).map_err(|e| PyRuntimeError::new_err(e.to_string()))
 }
