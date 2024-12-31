@@ -1,4 +1,5 @@
 ! Content reused from https://github.com/AdguardTeam/AdguardFilters under GPLv3
+! Run `cargo run --bin rebuild_rules` to rebuild
 !
 ! Content from external/adguardfilters/TrackParamFilter/sections/allowlist.txt
 !

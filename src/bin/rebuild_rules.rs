@@ -9,7 +9,12 @@ fn main() {
     ];
     println!("Rebuilding...");
     let all_data = format!(
-        "! Content reused from https://github.com/AdguardTeam/AdguardFilters under GPLv3\n!\n{}",
+        concat!(
+            "! Content reused from https://github.com/AdguardTeam/AdguardFilters under GPLv3\n",
+            "! Run `cargo run --bin rebuild_rules` to rebuild\n",
+            "!\n",
+            "{}"
+        ),
         join(
             sources
                 .iter()
