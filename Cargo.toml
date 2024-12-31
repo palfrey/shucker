@@ -4,6 +4,11 @@ version = "0.1.0"
 edition = "2021"
 license = "GPL-3.0-only"
 readme = "README.md"
+authors = ["Tom Parker-Shemilt <palfrey@tevp.net>"]
+repository = "https://github.com/palfrey/shucker"
+description = "Tracking-param filtering library, designed to strip URLs down to their canonical forms"
+categories = ["web-programming", "encoding"]
+keywords = ["adblock", "url", "tracking"]
 
 [lib]
 crate-type = ["cdylib", "rlib"]
