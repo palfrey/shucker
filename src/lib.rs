@@ -2,6 +2,8 @@
 
 mod rules;
 use anyhow::Result;
+
+#[cfg(feature = "python")]
 use pyo3::{
     exceptions::PyRuntimeError,
     pyfunction, pymodule,
@@ -13,11 +15,13 @@ pub fn shuck(url: &str) -> Result<String> {
     rules::stripper(url)
 }
 
+#[cfg(feature = "python")]
 #[pyfunction(name = "shuck")]
 fn py_shuck(url: &str) -> PyResult<String> {
     rules::stripper(url).map_err(|e| PyRuntimeError::new_err(e.to_string()))
 }
 
+#[cfg(feature = "python")]
 #[pymodule]
 fn shucker(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(py_shuck, m)?)?;

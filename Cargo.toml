@@ -25,7 +25,10 @@ anyhow = "1"
 url = "2"
 regex = "1"
 itertools = "0.14"
-pyo3 = {version = "0.23", features=["extension-module"]}
+pyo3 = {version = "0.23", features=["extension-module"], optional = true}
 
 [dev-dependencies]
 pretty_assertions = "1"
+
+[features]
+python = ["pyo3"]
