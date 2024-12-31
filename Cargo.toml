@@ -35,4 +35,7 @@ pyo3 = {version = "0.23", features=["extension-module"], optional = true}
 pretty_assertions = "1"
 
 [features]
-python = ["pyo3"]
+python = ["dep:pyo3"]
+
+[package.metadata.cargo-all-features]
+skip_optional_dependencies = true
