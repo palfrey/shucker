@@ -1,5 +1,6 @@
 Shucker
 =======
+[![Crates.io Version](https://img.shields.io/crates/v/shucker?link=https%3A%2F%2Fcrates.io%2Fcrates%2Fshucker)](https://crates.io/crates/shucker) [![PyPI - Version](https://img.shields.io/pypi/v/shucker)](https://pypi.org/project/shucker/)
 
 Shucker is a tracking-param filtering library, designed to strip URLs down to their canonical forms. It contains internally a set of rules derived from the [AdguardFilters](https://github.com/AdguardTeam/AdguardFilters) TrackParamFilter set, and then stripped down be able to be runnable outside of a browser. Note that although the original filters were designed for Javascript-based browser extensions, Shucker's core is a pure-Rust implementation for raw speed (some testing done against Hyperfine, but certainly seems fast enough so far i.e. < 1ms).
 
