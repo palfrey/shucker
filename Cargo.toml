@@ -12,7 +12,7 @@ keywords = ["adblock", "url", "tracking"]
 exclude = [
     "external/adguardfilters/*",
 ]
-include = ["src/*","build.rs","external/adguardfilters/TrackParamFilter/*"]
+include = ["src/*","build.rs", "external/adguardfilters/LICENSE", "external/adguardfilters/TrackParamFilter/*"]
 
 [lib]
 crate-type = ["cdylib", "rlib"]
