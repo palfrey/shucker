@@ -8,3 +8,7 @@ There is an [example command line tool provided](src/bin/shuck.rs) (`cargo run -
 Rebuilding the rules set
 ------------------------
 `make rebuild_rules` will pull the latest upstream rules and rebuild.
+
+Licensing
+---------
+The actual core Shucker code (i.e. everything _except_ the `external/adguardfilters` folder) is licensed under the [LGPL v3](https://www.gnu.org/licenses/lgpl-3.0.en.html). However, the `external/adguardfilters` code is [GPL v3](external/adguardfilters/LICENSE) and as that is used as part of the build-time generation of Shucker currently, the overall library is therefore GPLv3. This might change in the future if we remove said build-time requirement though.
