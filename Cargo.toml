@@ -3,6 +3,7 @@ name = "shucker"
 version = "0.1.0"
 edition = "2021"
 license = "GPLv3"
+readme = "README.md"
 
 [lib]
 crate-type = ["cdylib", "rlib"]
@@ -18,7 +19,7 @@ proc-macro2 = "1"
 anyhow = "1"
 url = "2"
 regex = "1"
-itertools = "0.13"
+itertools = "0.14"
 pyo3 = {version = "0.23", features=["extension-module"]}
 
 [dev-dependencies]
