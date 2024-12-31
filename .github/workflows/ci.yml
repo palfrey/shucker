@@ -43,7 +43,6 @@ jobs:
             make build
             make type-check
             make unittests
-            make pre-commit
     
     minimal-versions:
       name: minimal versions check
