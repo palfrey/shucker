@@ -19,10 +19,10 @@ develop:
 	.venv/bin/maturin develop --locked --uv --features python
 
 testpypi: sync-with-wheel
-	.venv/bin/twine upload -r testpypi target/wheels/target/wheels/*.manylinux2014_x86_64.whl target/wheels/*.tar.gz
+	.venv/bin/twine upload -r testpypi target/wheels/*.manylinux2014_x86_64.whl target/wheels/*.tar.gz --verbose
 
 pypi: sync-with-wheel
-	.venv/bin/twine upload target/wheels/target/wheels/*.manylinux2014_x86_64.whl target/wheels/*.tar.gz
+	.venv/bin/twine upload target/wheels/*.manylinux2014_x86_64.whl target/wheels/*.tar.gz
 
 type-check: sync-with-wheel
 	.venv/bin/pyright --pythonversion 3.9 --pythonpath $(PWD)/.venv/bin/python tests
