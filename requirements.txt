@@ -16,8 +16,6 @@ pytest==8.3.4
     # via -r requirements.in
 pytest-watcher==0.4.3
     # via -r requirements.in
-target/wheels/shucker-0.1.0-cp312-cp312-manylinux_2_34_x86_64.whl
-    # via -r requirements.in
 typing-extensions==4.12.2
     # via pyright
 watchdog==6.0.0
