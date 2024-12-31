@@ -26,19 +26,14 @@ fn skip_regex_splitter(params: &str) -> Vec<&str> {
                 }
                 _ => {}
             }
-        } else {
-            match c {
-                '/' => {
-                    in_regex = false;
-                }
-                _ => {}
-            }
+        } else if c == '/' {
+            in_regex = false;
         }
     }
     if first_index < params.len() {
         ret.push(&params[first_index..])
     }
-    return ret;
+    ret
 }
 
 #[derive(Debug, Clone)]
@@ -58,7 +53,7 @@ fn build_commands(out_dir: &Path) -> Result<Vec<Vec<Command>>> {
     let mut all_commands: Vec<Vec<Command>> = vec![];
     for (mut line_index, mut line) in raw_rules.split('\n').map(|l| l.trim_end()).enumerate() {
         line_index += 1;
-        if line.len() == 0
+        if line.is_empty()
             || line.starts_with('!')
             || line.contains("##.")
             || line.contains("#$#")
@@ -72,7 +67,9 @@ fn build_commands(out_dir: &Path) -> Result<Vec<Vec<Command>>> {
             line = &line[2..];
         }
         if !line.starts_with("$") {
-            let (hostname, _rest) = line.split_once('$').expect(&format!("hostname: '{line}'"));
+            let (hostname, _rest) = line
+                .split_once('$')
+                .unwrap_or_else(|| panic!("hostname: '{line}'"));
             commands.push(Command::Hostname(hostname.into()));
             line = &line[(hostname.len())..];
         }
@@ -94,7 +91,7 @@ fn build_commands(out_dir: &Path) -> Result<Vec<Vec<Command>>> {
             }
             let (key, value) = p
                 .split_once('=')
-                .expect(&format!("p: '{p}' at {line_index}"));
+                .unwrap_or_else(|| panic!("p: '{p}' at {line_index}"));
             match key {
                 "cookie" | "app" | "denyallow" => {}
                 "domain" => {
@@ -114,8 +111,8 @@ fn build_commands(out_dir: &Path) -> Result<Vec<Vec<Command>>> {
                 }
             }
         }
-        text_dump.write(format!("command: {commands:#?}").as_bytes())?;
-        text_dump.write("\n".as_bytes())?;
+        text_dump.write_all(format!("command: {commands:#?}").as_bytes())?;
+        text_dump.write_all("\n".as_bytes())?;
         all_commands.push(commands);
     }
     Ok(all_commands)
@@ -124,10 +121,10 @@ fn build_commands(out_dir: &Path) -> Result<Vec<Vec<Command>>> {
 fn comment_block(value: impl Debug) -> Vec<TokenStream> {
     let raw_comment = format!("{value:#?}");
 
-    return raw_comment
+    raw_comment
         .lines()
         .map(|line| quote!(#[doc = #line]))
-        .collect();
+        .collect()
 }
 
 fn generate_host_filters(value: &Vec<Command>) -> Vec<TokenStream> {
@@ -142,6 +139,9 @@ fn generate_host_filters(value: &Vec<Command>) -> Vec<TokenStream> {
                 if hostname_pattern.ends_with("^") {
                     hostname_pattern = hostname_pattern.replace("^", "[^a-z0-9_\\-\\.%]")
                 }
+                if hostname_pattern.starts_with("?") {
+                    hostname_pattern.remove(0);
+                }
                 requirements.push(quote! {
                     Regex::new(#hostname_pattern).unwrap().is_match(url_str)
                 });
@@ -153,17 +153,17 @@ fn generate_host_filters(value: &Vec<Command>) -> Vec<TokenStream> {
                            if h == #domains { return true;}
                            if h.ends_with(concat!(".", #domains)) { return true;}
                         )*
-                        return false;
+                        false
                         }).unwrap_or(false)
                 });
             }
             _ => {}
         }
     }
-    return requirements;
+    requirements
 }
 
-fn build_remove_params(all_commands: &Vec<Vec<Command>>) -> TokenStream {
+fn build_remove_params(all_commands: &[Vec<Command>]) -> TokenStream {
     let mut remove_params: BTreeMap<String, Vec<Vec<Command>>> = BTreeMap::new();
     all_commands
         .iter()
@@ -174,8 +174,7 @@ fn build_remove_params(all_commands: &Vec<Vec<Command>>) -> TokenStream {
                     Command::RemoveParam(param) => Some(param),
                     _ => None,
                 })
-                .filter(|p| p.is_some())
-                .next();
+                .find(|p| p.is_some());
             if let Some(key) = remove_param_keys {
                 (key, cv)
             } else {
@@ -196,7 +195,7 @@ fn build_remove_params(all_commands: &Vec<Vec<Command>>) -> TokenStream {
         let mut has_no_filter_command = false;
         for commands in value {
             if commands.len() == 1 {
-                if let Command::RemoveParam(_) = commands.get(0).unwrap() {
+                if let Some(Command::RemoveParam(_)) = commands.first() {
                     // Only command is remove param, so just remove it
                     has_no_filter_command = true;
                 }
@@ -217,15 +216,15 @@ fn build_remove_params(all_commands: &Vec<Vec<Command>>) -> TokenStream {
         };
         patterns.push(matcher);
     }
-    return quote! {
+    quote! {
         match key.deref() {
             #( #patterns )*
             _ => {}
         }
-    };
+    }
 }
 
-fn build_remove_params_regex(all_commands: &Vec<Vec<Command>>) -> TokenStream {
+fn build_remove_params_regex(all_commands: &[Vec<Command>]) -> TokenStream {
     let mut checks = vec![];
     all_commands
         .iter()
@@ -236,8 +235,7 @@ fn build_remove_params_regex(all_commands: &Vec<Vec<Command>>) -> TokenStream {
                     Command::RemoveParamRegex(param) => Some(param),
                     _ => None,
                 })
-                .filter(|p| p.is_some())
-                .next();
+                .find(|p| p.is_some());
             if let Some(key) = remove_param_keys {
                 (key, cv)
             } else {
@@ -250,7 +248,7 @@ fn build_remove_params_regex(all_commands: &Vec<Vec<Command>>) -> TokenStream {
             let check_key = key.replace("\\", "");
             let without_slashes = &check_key[1..check_key.len() - 1];
             let comments: Vec<TokenStream> = comment_block(value);
-            let requirements = generate_host_filters(&value);
+            let requirements = generate_host_filters(value);
             checks.push(quote!( {
                 #(#comments)*
                 if Regex::new(#without_slashes).unwrap().is_match(&key) {
@@ -258,9 +256,9 @@ fn build_remove_params_regex(all_commands: &Vec<Vec<Command>>) -> TokenStream {
                 }
             }));
         });
-    return quote!({
+    quote!({
         #(#checks)*
-    });
+    })
 }
 
 fn main() -> Result<()> {
@@ -275,6 +273,8 @@ fn main() -> Result<()> {
        use anyhow::Result;
        use std::ops::Deref;
        use regex::Regex;
+
+       #[allow(clippy::collapsible_if)]
        pub fn stripper(url_str: &str) -> Result<String> {
         let mut url = Url::parse(url_str)?;
         let mut query: Vec<(String, String)> = vec![];

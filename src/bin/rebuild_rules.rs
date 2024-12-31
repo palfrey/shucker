@@ -2,7 +2,7 @@ use itertools::join;
 use std::{fs, path::Path};
 
 fn main() {
-    let sources = vec![
+    let sources = [
         "external/adguardfilters/TrackParamFilter/sections/allowlist.txt",
         "external/adguardfilters/TrackParamFilter/sections/general_url.txt",
         "external/adguardfilters/TrackParamFilter/sections/specific.txt",
