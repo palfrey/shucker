@@ -9,6 +9,10 @@ repository = "https://github.com/palfrey/shucker"
 description = "Tracking-param filtering library, designed to strip URLs down to their canonical forms"
 categories = ["web-programming", "encoding"]
 keywords = ["adblock", "url", "tracking"]
+exclude = [
+    "external/adguardfilters/*",
+]
+include = ["src/*","build.rs","external/adguardfilters/TrackParamFilter/*"]
 
 [lib]
 crate-type = ["cdylib", "rlib"]

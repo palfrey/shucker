@@ -1,0 +1,13 @@
+[tool.pytest.ini_options]
+pythonpath = ["."]
+
+[build-system]
+requires = ["maturin>=1.0,<2.0"]
+build-backend = "maturin"
+
+[project]
+name = "shucker"
+version = "0.1.0"
+license = "GPL-3.0-only"
+readme = "README.md"
+description = "Tracking-param filtering library, designed to strip URLs down to their canonical forms"
