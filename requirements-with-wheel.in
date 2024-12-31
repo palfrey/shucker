@@ -1,2 +1,2 @@
 -r requirements.txt
-target/wheels/shucker-0.1.0-cp312-cp312-manylinux_2_34_x86_64.whl
+target/wheels/shucker-0.1.1-cp312-cp312-manylinux_2_34_x86_64.whl

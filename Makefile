@@ -12,7 +12,7 @@ build-sdist: sync
 
 build-release: sync
 	for i in $(shell seq 9 12); do \
-		docker run --rm -v $(PWD)/..:/io ghcr.io/pyo3/maturin build -i 3.$$i --locked --features python; \
+		docker run --rm -v $(PWD):/io ghcr.io/pyo3/maturin build -i 3.$$i --locked --features python --release; \
 	done
 
 develop:
@@ -21,7 +21,7 @@ develop:
 testpypi: sync-with-wheel
 	.venv/bin/twine upload -r testpypi target/wheels/*.manylinux2014_x86_64.whl target/wheels/*.tar.gz --verbose
 
-pypi: sync-with-wheel
+pypi: sync
 	.venv/bin/twine upload target/wheels/*.manylinux2014_x86_64.whl target/wheels/*.tar.gz
 
 type-check: sync-with-wheel
