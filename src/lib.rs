@@ -80,4 +80,11 @@ mod tests {
         let result = shuck(original).unwrap();
         assert_eq!(result, "https://www.reddit-not.com/r/apple/comments/1g478w1/apple_announces_new_ipad_mini_with_a17_pro_chip/?%24deep_link=true&post_index=1&%243p=e_as");
     }
+
+    #[test]
+    fn no_remove_other_params() {
+        let original = "http://example.com?utm_source=foo&id=bar";
+        let result = shuck(original).unwrap();
+        assert_eq!(result, "http://example.com/?id=bar");        
+    }
 }
