@@ -11,7 +11,7 @@ build-sdist: sync
 	.venv/bin/maturin sdist
 
 build-release: sync
-	for i in $(shell seq 9 12); do \
+	for i in $(shell seq 9 13); do \
 		docker run --rm -v $(PWD):/io ghcr.io/pyo3/maturin build -i 3.$$i --locked --features python --release; \
 	done
 
