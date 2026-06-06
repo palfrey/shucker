@@ -282,6 +282,9 @@ fn main() -> Result<()> {
        use regex::Regex;
 
        #[allow(clippy::collapsible_if)]
+       #[allow(unused_doc_comments)]
+       #[allow(clippy::collapsible_match)]
+       #[allow(clippy::regex_creation_in_loops)]
        pub fn stripper(url_str: &str) -> Result<String> {
         let mut url = Url::parse(url_str)?;
         let mut query: Vec<(String, String)> = vec![];
