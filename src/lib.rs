@@ -1,4 +1,5 @@
 #![allow(unused_doc_comments)]
+#![allow(clippy::regex_creation_in_loops)]
 
 mod rules;
 use anyhow::Result;
