@@ -1,5 +1,3 @@
-#![allow(unused_doc_comments)]
-
 mod rules;
 use anyhow::Result;
 
@@ -85,6 +83,6 @@ mod tests {
     fn no_remove_other_params() {
         let original = "http://example.com?utm_source=foo&id=bar";
         let result = shuck(original).unwrap();
-        assert_eq!(result, "http://example.com/?id=bar");        
+        assert_eq!(result, "http://example.com/?id=bar");
     }
 }

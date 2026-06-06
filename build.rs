@@ -14,7 +14,7 @@ fn skip_regex_splitter(params: &str) -> Vec<&str> {
     let mut ret = vec![];
     let mut in_regex = false;
     let mut first_index = 0;
-    for (index, c) in params.chars().enumerate() {
+    for (index, c) in params.char_indices() {
         if !in_regex {
             match c {
                 '/' => {
@@ -132,12 +132,15 @@ fn generate_host_filters(value: &Vec<Command>) -> Vec<TokenStream> {
     for command in value {
         match command {
             Command::Hostname(hostname) => {
+                if hostname == "*" {
+                    continue;
+                }
                 let mut hostname_pattern = hostname.clone();
                 if hostname_pattern.starts_with("||") {
-                    hostname_pattern = hostname_pattern.replace("||", "https?://(?:www\\.)?")
+                    hostname_pattern = hostname_pattern.replace("||", r"https?://(?:www\.)?")
                 }
                 if hostname_pattern.ends_with("^") {
-                    hostname_pattern = hostname_pattern.replace("^", "[^a-z0-9_\\-\\.%]")
+                    hostname_pattern = hostname_pattern.replace("^", r"[^a-z0-9_\-\.%]")
                 }
                 if hostname_pattern.starts_with("?") {
                     hostname_pattern.remove(0);
@@ -185,7 +188,11 @@ fn build_remove_params(all_commands: &[Vec<Command>]) -> TokenStream {
         .map(|(key, value)| (key.unwrap(), value))
         .for_each(|(key, value)| {
             remove_params
-                .entry(key.clone())
+                .entry(
+                    urlencoding::decode(key)
+                        .expect("should be valid query string")
+                        .into_owned(),
+                )
                 .and_modify(|v| v.push(value.to_vec()))
                 .or_insert(vec![value.to_vec()]);
         });
@@ -275,6 +282,9 @@ fn main() -> Result<()> {
        use regex::Regex;
 
        #[allow(clippy::collapsible_if)]
+       #[allow(unused_doc_comments)]
+       #[allow(clippy::collapsible_match)]
+       #[allow(clippy::regex_creation_in_loops)]
        pub fn stripper(url_str: &str) -> Result<String> {
         let mut url = Url::parse(url_str)?;
         let mut query: Vec<(String, String)> = vec![];

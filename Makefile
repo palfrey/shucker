@@ -50,3 +50,6 @@ sync: requirements.txt .venv/bin/python
 
 sync-with-wheel: requirements-with-wheel.txt .venv/bin/python
 	uv pip sync requirements-with-wheel.txt
+
+pre-commit: sync
+	.venv/bin/pre-commit run -a
