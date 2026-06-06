@@ -188,7 +188,11 @@ fn build_remove_params(all_commands: &[Vec<Command>]) -> TokenStream {
         .map(|(key, value)| (key.unwrap(), value))
         .for_each(|(key, value)| {
             remove_params
-                .entry(urlencoding::decode(key).expect("should be valid query string").into_owned())
+                .entry(
+                    urlencoding::decode(key)
+                        .expect("should be valid query string")
+                        .into_owned(),
+                )
                 .and_modify(|v| v.push(value.to_vec()))
                 .or_insert(vec![value.to_vec()]);
         });
