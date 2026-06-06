@@ -15,7 +15,7 @@ jobs:
       with:
         toolchain: stable
         components: clippy, rustfmt
-    - uses: Swatinem/rust-cache@v2.2.1
+    - uses: Swatinem/rust-cache@v2
     - name: Check formatting
       run: cargo fmt -- --check
     - name: Clippy
