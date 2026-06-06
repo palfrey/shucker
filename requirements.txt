@@ -74,7 +74,7 @@ pygments==2.20.0
     #   rich
 pyright==1.1.391
     # via -r requirements.in
-pytest==8.3.4
+pytest==9.0.3
     # via -r requirements.in
 pytest-watcher==0.4.3
     # via -r requirements.in
