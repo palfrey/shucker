@@ -1,0 +1,28 @@
+{
+  $schema: "https://docs.renovatebot.com/renovate-schema.json",
+  extends: [
+    ":ignoreModulesAndTests",
+    "group:monorepos",
+    "group:recommended",
+    "replacements:all",
+    "workarounds:all",
+  ],
+  packageRules: [
+    {
+      matchUpdateTypes: ["patch", "minor"],
+      enabled: false
+    },
+    {
+      matchPackageNames: ["*"],
+      automerge: true
+    },
+  ],
+  "vulnerabilityAlerts": {
+    "enabled": true
+  },
+  "osvVulnerabilityAlerts": true,
+  // Beta - https://docs.renovatebot.com/modules/manager/pre-commit/
+  "pre-commit": {
+    "enabled": true
+  },
+}
