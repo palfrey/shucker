@@ -82,7 +82,7 @@ python-discovery==1.4.0
     # via virtualenv
 pyyaml==6.0.3
     # via pre-commit
-readme-renderer==44.0
+readme-renderer==45.0
     # via twine
 requests==2.33.0
     # via
