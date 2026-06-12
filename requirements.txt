@@ -8,7 +8,7 @@ cfgv==3.5.0
     # via pre-commit
 charset-normalizer==3.4.1
     # via requests
-cryptography==48.0.0
+cryptography==49.0.0
     # via secretstorage
 distlib==0.4.1
     # via virtualenv
