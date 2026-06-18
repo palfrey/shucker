@@ -10,7 +10,7 @@ jobs:
     name: Test suite
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v6.0.3
+    - uses: actions/checkout@v7.0.0
     - uses: dtolnay/rust-toolchain@stable
       with:
         toolchain: stable
@@ -58,7 +58,7 @@ jobs:
     name: minimal versions check
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v6.0.3
+    - uses: actions/checkout@v7.0.0
     - uses: dtolnay/rust-toolchain@stable
       with:
         toolchain: nightly
@@ -70,7 +70,7 @@ jobs:
     name: dependency updates
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v6.0.3
+    - uses: actions/checkout@v7.0.0
     - uses: dtolnay/rust-toolchain@stable
       with:
         toolchain: stable
