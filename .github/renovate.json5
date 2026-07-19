@@ -6,21 +6,8 @@
     "group:recommended",
     "replacements:all",
     "workarounds:all",
+    "security:only-security-updates",
   ],
-  packageRules: [
-    {
-      matchUpdateTypes: ["patch", "minor"],
-      enabled: false
-    },
-    {
-      matchPackageNames: ["*"],
-      automerge: true
-    },
-  ],
-  "vulnerabilityAlerts": {
-    "enabled": true
-  },
-  "osvVulnerabilityAlerts": true,
   "prConcurrentLimit": 2,
   "prHourlyLimit": 1000, // really, as many as it likes, just concurrent limit
   // Beta - https://docs.renovatebot.com/modules/manager/pre-commit/
