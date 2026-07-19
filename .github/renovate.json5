@@ -7,6 +7,7 @@
     "replacements:all",
     "workarounds:all",
     "security:only-security-updates",
+    ":disableDependencyDashboard",
   ],
   "prConcurrentLimit": 2,
   "prHourlyLimit": 1000, // really, as many as it likes, just concurrent limit
