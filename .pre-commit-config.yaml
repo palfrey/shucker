@@ -28,12 +28,3 @@ repos:
   rev: 7.3.0
   hooks:
   - id: flake8
-
-- repo: local
-  hooks:
-  - id: requirements
-    name: compile requirements
-    language: system
-    entry: make requirements.txt
-    files: requirements.*
-    pass_filenames: false
