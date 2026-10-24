@@ -1,6 +1,0 @@
-maturin
-pytest
-pytest-watcher
-twine
-pyright
-pre-commit

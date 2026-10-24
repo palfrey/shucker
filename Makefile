@@ -11,7 +11,7 @@ build-sdist: sync
 	.venv/bin/maturin sdist
 
 build-release: sync
-	for i in $(shell seq 9 13); do \
+	for i in $(shell seq 11 13); do \
 		docker run --rm -v $(PWD):/io ghcr.io/pyo3/maturin build -i 3.$$i --locked --features python --release; \
 	done
 
@@ -25,10 +25,10 @@ pypi: sync
 	.venv/bin/twine upload target/wheels/*.manylinux2014_x86_64.whl target/wheels/*.tar.gz
 
 type-check: sync-with-wheel
-	.venv/bin/pyright --pythonversion 3.9 --pythonpath $(PWD)/.venv/bin/python tests
+	.venv/bin/pyright --pythonversion 3.11 --pythonpath $(PWD)/.venv/bin/python tests
 
 watch-type-check: sync-with-wheel
-	.venv/bin/pyright --pythonversion 3.9 --pythonpath $(PWD)/.venv/bin/python --watch tests
+	.venv/bin/pyright --pythonversion 3.11 --pythonpath $(PWD)/.venv/bin/python --watch tests
 
 unittests: sync-with-wheel
 	.venv/bin/pytest -vvv tests/
@@ -36,20 +36,14 @@ unittests: sync-with-wheel
 unittests-watch: sync-with-wheel
 	.venv/bin/ptw --runner .venv/bin/pytest --now . -- -vvv tests/
 
-requirements.txt: requirements.in constraints.txt
-	uv pip compile --no-strip-extras requirements.in -o requirements.txt -c constraints.txt
-
-requirements-with-wheel.txt: requirements.txt requirements-with-wheel.in constraints.txt
-	uv pip compile --no-strip-extras requirements-with-wheel.in -o requirements-with-wheel.txt -c constraints.txt
-
 .venv/bin/python:
 	uv venv
 
-sync: requirements.txt .venv/bin/python
-	uv pip sync requirements.txt
+sync: .venv/bin/python
+	uv sync
 
-sync-with-wheel: requirements-with-wheel.txt .venv/bin/python
-	uv pip sync requirements-with-wheel.txt
+sync-with-wheel: sync
+	uv pip install target/wheels/shucker-0.1.1-cp312-cp312-manylinux_2_34_x86_64.whl
 
 pre-commit: sync
 	.venv/bin/pre-commit run -a
