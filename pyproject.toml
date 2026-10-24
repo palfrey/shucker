@@ -19,7 +19,7 @@ dev = [
   "pytest==9.0.3",
   "pytest-watcher==0.4.3",
   "twine==6.0.1",
-  "pyright==1.1.391",
+  "pyright==1.1.414",
   "pre-commit==4.6.0",
 ]
 
